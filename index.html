@@ -478,6 +478,73 @@
     </div>
   </div>
 
+  <!-- ══ LEADERSHIP CALENDAR ══ -->
+  <div class="section-card">
+    <div class="section-header open" onclick="toggleSection(this)">
+      <h2>leadership calendar</h2>
+      <span class="toggle">+</span>
+    </div>
+    <div class="section-body">
+      <div class="calendar-status-note" id="leadership-cal-status">Loading calendar…</div>
+      <div class="calendar-scroll-outer">
+        <div class="calendar-container" id="leadership-cal-container"></div>
+      </div>
+      <div class="calendar-legend" id="leadership-cal-legend"></div>
+      <div class="legend-icon-group">
+        <span>✈️ Work travel</span>
+        <span>🌴 Personal / OOO</span>
+      </div>
+      <div class="embed-footer">
+        <a href="https://docs.google.com/spreadsheets/d/1H1cN97CCsAe9WrHzNTbNwQbGc3FIcndd/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true" target="_blank">open sheet to edit →</a>
+      </div>
+    </div>
+  </div>
+
+
+
+<!-- ══ MEETING LOG ══ -->
+  <div class="section-card">
+    <div class="section-header open" onclick="toggleSection(this)">
+      <h2>meeting log</h2>
+      <span class="toggle">+</span>
+    </div>
+    <div class="section-body">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <p class="section-note" style="margin:0;">Slides, recordings, and key takeaways from each leadership meeting — newest first.</p>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/2026%20meeting%20recordings?csf=1&web=1&e=Yyfk3z" target="_blank" style="display:inline-block; background:#6464FF; color:#fff; text-decoration:none; padding:7px 14px; border-radius:6px; font-size:0.85rem; font-weight:500; white-space:nowrap;">meeting recordings</a>
+          <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/2026%20meeting%20slides,%20summaries?csf=1&web=1&e=e2EUrC" target="_blank" style="display:inline-block; background:#6464FF; color:#fff; text-decoration:none; padding:7px 14px; border-radius:6px; font-size:0.85rem; font-weight:500; white-space:nowrap;">meeting slides &amp; summaries</a>
+        </div>
+      </div>
+      <div class="embed-wrapper">
+        <iframe
+          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQxPHVAf3tY_GsMITGeosGWe06zV368puNrM_N_q7wVnI2OeLsHzHOUw_g0A1vhA8q4tPSZc0ZLcI-N/pubhtml?gid=1247336624&single=true&widget=false&headers=false&chrome=false"
+          height="340"
+        ></iframe>
+      </div>
+      <div class="embed-footer">
+        <a href="https://docs.google.com/spreadsheets/d/1ONwIgDbl4-faraQrxvSj7AFbt5Xq1PUojUpNF7atDnw/edit?usp=sharing" target="_blank">open in full screen →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ACTION ITEM TRACKER ══ -->
+  <div class="section-card">
+    <div class="section-header open" onclick="toggleSection(this)">
+      <h2>action item tracker</h2>
+      <span class="toggle">+</span>
+    </div>
+    <div class="section-body">
+      <div class="ai-status-note" id="ai-status">Loading action items…</div>
+      <div class="ai-scroll" id="ai-scroll">
+        <div class="ai-list" id="ai-list"></div>
+      </div>
+      <div class="embed-footer">
+        <a href="https://docs.google.com/spreadsheets/d/1VbdbSbB-eQmW_gDU0WUEU-qc4fHx43Vw/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true" target="_blank">open sheet to edit →</a>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ BRAND RESOURCES ══ -->
   <div class="section-card">
     <div class="section-header" onclick="toggleSection(this)">
@@ -570,74 +637,7 @@
     </div>
   </div>
 
-  <!-- ══ MEETING LOG ══ -->
-  <div class="section-card">
-    <div class="section-header open" onclick="toggleSection(this)">
-      <h2>meeting log</h2>
-      <span class="toggle">+</span>
-    </div>
-    <div class="section-body">
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-        <p class="section-note" style="margin:0;">Slides, recordings, and key takeaways from each leadership meeting — newest first.</p>
-        <div style="display:flex; gap:8px; flex-shrink:0;">
-          <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/2026%20meeting%20recordings?csf=1&web=1&e=Yyfk3z" target="_blank" style="display:inline-block; background:#6464FF; color:#fff; text-decoration:none; padding:7px 14px; border-radius:6px; font-size:0.85rem; font-weight:500; white-space:nowrap;">meeting recordings</a>
-          <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/2026%20meeting%20slides,%20summaries?csf=1&web=1&e=e2EUrC" target="_blank" style="display:inline-block; background:#6464FF; color:#fff; text-decoration:none; padding:7px 14px; border-radius:6px; font-size:0.85rem; font-weight:500; white-space:nowrap;">meeting slides &amp; summaries</a>
-        </div>
-      </div>
-      <div class="embed-wrapper">
-        <iframe
-          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQxPHVAf3tY_GsMITGeosGWe06zV368puNrM_N_q7wVnI2OeLsHzHOUw_g0A1vhA8q4tPSZc0ZLcI-N/pubhtml?gid=1247336624&single=true&widget=false&headers=false&chrome=false"
-          height="340"
-        ></iframe>
-      </div>
-      <div class="embed-footer">
-        <a href="https://docs.google.com/spreadsheets/d/1ONwIgDbl4-faraQrxvSj7AFbt5Xq1PUojUpNF7atDnw/edit?usp=sharing" target="_blank">open in full screen →</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ ACTION ITEM TRACKER ══ -->
-  <div class="section-card">
-    <div class="section-header open" onclick="toggleSection(this)">
-      <h2>action item tracker</h2>
-      <span class="toggle">+</span>
-    </div>
-    <div class="section-body">
-      <div class="ai-status-note" id="ai-status">Loading action items…</div>
-      <div class="ai-scroll" id="ai-scroll">
-        <div class="ai-list" id="ai-list"></div>
-      </div>
-      <div class="embed-footer">
-        <a href="REPLACE_WITH_ACTION_ITEMS_SHEET_EDIT_URL" target="_blank">open sheet to edit →</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ LEADERSHIP CALENDAR ══ -->
-  <div class="section-card">
-    <div class="section-header open" onclick="toggleSection(this)">
-      <h2>leadership calendar</h2>
-      <span class="toggle">+</span>
-    </div>
-    <div class="section-body">
-      <div class="calendar-status-note" id="leadership-cal-status">Loading calendar…</div>
-      <div class="calendar-scroll-outer">
-        <div class="calendar-container" id="leadership-cal-container"></div>
-      </div>
-      <div class="calendar-legend" id="leadership-cal-legend"></div>
-      <div class="legend-icon-group">
-        <span>✈️ Work travel</span>
-        <span>🌴 Personal / OOO</span>
-      </div>
-      <div class="embed-footer">
-        <a href="https://docs.google.com/spreadsheets/d/1H1cN97CCsAe9WrHzNTbNwQbGc3FIcndd/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true" target="_blank">open sheet to edit →</a>
-      </div>
-    </div>
-  </div>
-
-
-
-</main>
+  </main>
 </div><!-- /dashboard -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
