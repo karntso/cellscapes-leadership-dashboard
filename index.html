@@ -270,6 +270,100 @@
       color: #888;
       margin-bottom: 12px;
     }
+
+    /* ── Leadership Calendar (custom, live from Google Sheet) ── */
+    .calendar-status-note {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 14px;
+    }
+    .calendar-scroll-outer {
+      overflow-x: auto;
+      padding-bottom: 12px;
+    }
+    .calendar-container { display: flex; flex-wrap: nowrap; gap: 28px; }
+    .calendar-month { flex: 0 0 auto; width: 560px; }
+    .calendar-month-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+    .calendar-dow {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #737373;
+      text-align: center;
+      padding-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .calendar-day {
+      height: 128px;
+      border-radius: 8px;
+      background: #F3F0E8;
+      padding: 6px 6px;
+      font-size: 0.75rem;
+      overflow: hidden;
+    }
+    .calendar-day.empty { background: transparent; }
+    .calendar-day.today { box-shadow: inset 0 0 0 2px #6464FF; }
+    .calendar-day.holiday { background: #DED9D1; }
+    .calendar-day-num {
+      font-weight: 700;
+      font-size: 0.74rem;
+      margin-bottom: 2px;
+    }
+    .day-badge-slot {
+      min-height: 32px;
+    }
+    .day-event-badge {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      font-size: 0.6rem;
+      font-weight: 700;
+      line-height: 1.25;
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: #FFFFFF;
+      overflow: hidden;
+    }
+    .day-ooo-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.64rem;
+      line-height: 1.35;
+      min-height: 15px;
+      margin-bottom: 1px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .day-ooo-icon { font-size: 0.66rem; flex-shrink: 0; }
+    .calendar-legend {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      font-size: 0.78rem;
+      color: #737373;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .legend-icon-group { display: flex; align-items: center; gap: 16px; margin-top: 8px; font-size: 0.78rem; color: #737373; }
   </style>
 </head>
 <body>
@@ -456,14 +550,17 @@
       <span class="toggle">+</span>
     </div>
     <div class="section-body">
-      <div class="embed-wrapper">
-        <iframe
-          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQdEwEE5IlPlF98-CIb3HXLE7X7VyUtu6zgIXmv7mceo1kHitXvKhORt-QDOJLAfUf2RM43MjLelSHc/pubhtml?gid=98282348&single=true&widget=false&headers=false&chrome=false"
-          height="400"
-        ></iframe>
+      <div class="calendar-status-note" id="leadership-cal-status">Loading calendar…</div>
+      <div class="calendar-scroll-outer">
+        <div class="calendar-container" id="leadership-cal-container"></div>
+      </div>
+      <div class="calendar-legend" id="leadership-cal-legend"></div>
+      <div class="legend-icon-group">
+        <span>✈️ Work travel</span>
+        <span>🌴 Personal / OOO</span>
       </div>
       <div class="embed-footer">
-        <a href="https://docs.google.com/spreadsheets/d/1z2Wo_Y3wc9PO7mAzx08ZtbSqQaSNXas9H5noVG6-eEE/edit?usp=sharing" target="_blank">open in full screen →</a>
+        <a href="https://docs.google.com/spreadsheets/d/1H1cN97CCsAe9WrHzNTbNwQbGc3FIcndd/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true" target="_blank">open sheet to edit →</a>
       </div>
     </div>
   </div>
@@ -473,6 +570,7 @@
 </main>
 </div><!-- /dashboard -->
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
   function toggleSection(header) {
     header.classList.toggle('open');
@@ -517,6 +615,189 @@
   if (localStorage.getItem(SESSION_KEY) === 'true') {
     showDashboard();
   }
+
+  // ══════════════════════════════════════════════════════════════
+  // LEADERSHIP CALENDAR (custom, live from Google Sheet)
+  // ══════════════════════════════════════════════════════════════
+  const LEADERSHIP_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsb5OHT8jU_Ka17CUCkiL03smuHg0yXZwmEJR72UTFszwiuO6k5e4gBt_Kx6TIGA/pub?gid=1926429411&single=true&output=csv";
+
+  const LEADERSHIP_EVENT_TYPE_COLORS = {
+    "Holiday": "#CD0F55",
+    "Conference": "#00A59B",
+    "Leadership Meeting": "#6464FF",
+    "Social": "#8246E1",
+    "Hosting / Guest Visit": "#FF6E00",
+    "Other": "#737373"
+  };
+
+  function parseLocalDateLC(str) {
+    if (!str) return null;
+    const m = String(str).trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (m) return new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
+    const d = new Date(str);
+    return isNaN(d) ? null : d;
+  }
+
+  function dateKeyLC(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function expandRowLC(row) {
+    const start = parseLocalDateLC(row.Start);
+    const end = parseLocalDateLC(row.End) || start;
+    const keys = [];
+    if (!start) return keys;
+    const cur = new Date(start);
+    while (cur <= end) {
+      keys.push(dateKeyLC(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return keys;
+  }
+
+  function buildDayIndexLC(rows) {
+    const index = {};
+    rows.forEach(row => {
+      expandRowLC(row).forEach(key => {
+        if (!index[key]) index[key] = { events: [], ooo: [] };
+        if (row.RecordType === 'Event') index[key].events.push(row);
+        else index[key].ooo.push(row);
+      });
+    });
+    return index;
+  }
+
+  function buildMonthGridLC(monthDate, dayIndex, today) {
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const monthDiv = document.createElement('div');
+    monthDiv.className = 'calendar-month';
+    const title = document.createElement('div');
+    title.className = 'calendar-month-title';
+    title.textContent = monthNames[month] + ' ' + year;
+    monthDiv.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.className = 'calendar-grid';
+    ['M','T','W','T','F'].forEach(d => {
+      const dow = document.createElement('div');
+      dow.className = 'calendar-dow';
+      dow.textContent = d;
+      grid.appendChild(dow);
+    });
+
+    let firstWeekdayPlaced = false;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dow = new Date(year, month, day).getDay();
+      if (dow === 0 || dow === 6) continue;
+
+      const monIndex = dow - 1;
+      if (!firstWeekdayPlaced) {
+        for (let i = 0; i < monIndex; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'calendar-day empty';
+          grid.appendChild(empty);
+        }
+        firstWeekdayPlaced = true;
+      }
+
+      const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+      const dayData = dayIndex[key];
+      const isHoliday = dayData && dayData.events.some(e => e.EventType === 'Holiday');
+      const cell = document.createElement('div');
+      cell.className = 'calendar-day' + (isToday ? ' today' : '') + (isHoliday ? ' holiday' : '');
+
+      const num = document.createElement('div');
+      num.className = 'calendar-day-num';
+      num.textContent = day;
+      cell.appendChild(num);
+
+      const badgeSlot = document.createElement('div');
+      badgeSlot.className = 'day-badge-slot';
+      if (dayData && dayData.events.length) {
+        const ev = dayData.events[0];
+        const badge = document.createElement('div');
+        badge.className = 'day-event-badge';
+        badge.style.background = LEADERSHIP_EVENT_TYPE_COLORS[ev.EventType] || LEADERSHIP_EVENT_TYPE_COLORS['Other'];
+        badge.textContent = ev.EventTitle;
+        badgeSlot.appendChild(badge);
+      }
+      cell.appendChild(badgeSlot);
+
+      const travel = (dayData ? dayData.ooo.filter(o => o.OOOType === 'Work Travel').map(o => o.Person) : []);
+      const personal = (dayData ? dayData.ooo.filter(o => o.OOOType === 'Personal').map(o => o.Person) : []);
+
+      const personalRow = document.createElement('div');
+      personalRow.className = 'day-ooo-row';
+      if (personal.length) {
+        personalRow.innerHTML = '<span class="day-ooo-icon">🌴</span>' + personal.join(', ');
+      }
+      cell.appendChild(personalRow);
+
+      const travelRow = document.createElement('div');
+      travelRow.className = 'day-ooo-row';
+      if (travel.length) {
+        travelRow.innerHTML = '<span class="day-ooo-icon">✈️</span>' + travel.join(', ');
+      }
+      cell.appendChild(travelRow);
+
+      grid.appendChild(cell);
+    }
+    monthDiv.appendChild(grid);
+    return monthDiv;
+  }
+
+  function mapLeadershipCsvRow(row) {
+    return {
+      RecordType: (row['Record Type'] || '').trim(),
+      Person: (row['Person'] || '').trim(),
+      OOOType: (row['OOO Type'] || '').trim(),
+      EventTitle: (row['Event Title'] || '').trim(),
+      EventType: (row['Event Type'] || '').trim(),
+      Start: (row['Start Date'] || '').trim(),
+      End: (row['End Date'] || '').trim()
+    };
+  }
+
+  function renderLeadershipCalendar(rows) {
+    const dayIndex = buildDayIndexLC(rows);
+    const container = document.getElementById('leadership-cal-container');
+    container.innerHTML = '';
+    const today = new Date();
+
+    const monthCount = 12 - today.getMonth();
+    for (let m = 0; m < monthCount; m++) {
+      const monthDate = new Date(today.getFullYear(), today.getMonth() + m, 1);
+      container.appendChild(buildMonthGridLC(monthDate, dayIndex, today));
+    }
+    const legend = document.getElementById('leadership-cal-legend');
+    legend.innerHTML = Object.entries(LEADERSHIP_EVENT_TYPE_COLORS)
+      .map(([cat, color]) => `<span><span class="legend-dot" style="background:${color}"></span>${cat}</span>`)
+      .join('');
+  }
+
+  async function loadLeadershipCalendar() {
+    const note = document.getElementById('leadership-cal-status');
+    try {
+      const res = await fetch(LEADERSHIP_CSV_URL);
+      if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+      const text = await res.text();
+      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+      const rows = parsed.data.map(mapLeadershipCsvRow).filter(r => r.RecordType);
+      renderLeadershipCalendar(rows);
+      note.textContent = '';
+    } catch (err) {
+      console.error('Leadership calendar load error:', err);
+      note.textContent = 'Unable to load the calendar right now. Check that the sheet is published and the link is correct.';
+    }
+  }
+
+  loadLeadershipCalendar();
 </script>
 
 </body>
