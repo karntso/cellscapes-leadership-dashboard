@@ -364,6 +364,78 @@
       vertical-align: middle;
     }
     .legend-icon-group { display: flex; align-items: center; gap: 16px; margin-top: 8px; font-size: 0.78rem; color: #737373; }
+
+    /* ── Action Item Tracker (custom, live from Google Sheet) ── */
+    .ai-status-note {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 12px;
+    }
+    .ai-scroll {
+      max-height: 420px;
+      overflow-y: auto;
+      border: 1px solid #E5E2DC;
+      border-radius: 8px;
+    }
+    .ai-list { display: flex; flex-direction: column; }
+    .ai-item {
+      padding: 14px 16px;
+      border-bottom: 1px solid #EFEBE3;
+    }
+    .ai-item:last-child { border-bottom: none; }
+    .ai-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .ai-category {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #6464FF;
+      background: #EDEDFF;
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: lowercase;
+    }
+    .ai-status-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      padding: 3px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .ai-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .ai-meta {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: #737373;
+      margin-bottom: 4px;
+    }
+    .ai-due {
+      font-weight: 600;
+      color: #6464FF;
+      white-space: nowrap;
+    }
+    .ai-notes {
+      font-size: 0.78rem;
+      color: #888;
+      line-height: 1.45;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -531,14 +603,12 @@
       <span class="toggle">+</span>
     </div>
     <div class="section-body">
-      <div class="embed-wrapper">
-        <iframe
-          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQxPHVAf3tY_GsMITGeosGWe06zV368puNrM_N_q7wVnI2OeLsHzHOUw_g0A1vhA8q4tPSZc0ZLcI-N/pubhtml?gid=376377722&single=true&widget=false&headers=false&chrome=false"
-          height="340"
-        ></iframe>
+      <div class="ai-status-note" id="ai-status">Loading action items…</div>
+      <div class="ai-scroll" id="ai-scroll">
+        <div class="ai-list" id="ai-list"></div>
       </div>
       <div class="embed-footer">
-        <a href="https://docs.google.com/spreadsheets/d/1ONwIgDbl4-faraQrxvSj7AFbt5Xq1PUojUpNF7atDnw/edit?usp=sharing" target="_blank">open in full screen →</a>
+        <a href="REPLACE_WITH_ACTION_ITEMS_SHEET_EDIT_URL" target="_blank">open sheet to edit →</a>
       </div>
     </div>
   </div>
@@ -799,6 +869,98 @@
   }
 
   loadLeadershipCalendar();
+
+  // ══════════════════════════════════════════════════════════════
+  // ACTION ITEM TRACKER (custom, live from Google Sheet)
+  // ══════════════════════════════════════════════════════════════
+  const ACTION_ITEMS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9BQccRIpL6fd-0v9DvXjXl4pMB84t0XavWFt5TA0F6d3bFkrzZuqHlCnQYflRvQ/pub?gid=350938997&single=true&output=csv";
+
+  const AI_STATUS_COLORS = {
+    "Not Started": "#737373",
+    "In Progress": "#FF6E00",
+    "Done": "#00A59B",
+    "At Risk": "#CD0F55"
+  };
+
+  function formatDueDate(str) {
+    const d = parseLocalDateLC(str);
+    if (!d) return '';
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return monthNames[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  }
+
+  function escapeHtmlAI(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function mapActionItemCsvRow(row) {
+    return {
+      Category: (row['Category'] || '').trim(),
+      ActionItem: (row['Action Item'] || '').trim(),
+      Owners: (row['Owner(s)'] || '').trim(),
+      DueDate: (row['Due Date'] || '').trim(),
+      Status: (row['Status'] || '').trim(),
+      Notes: (row['Notes'] || '').trim()
+    };
+  }
+
+  function renderActionItems(rows) {
+    const list = document.getElementById('ai-list');
+    list.innerHTML = '';
+
+    const sorted = rows
+      .filter(r => r.ActionItem)
+      .map(r => ({ ...r, _date: parseLocalDateLC(r.DueDate) }))
+      .sort((a, b) => (a._date || Infinity) - (b._date || Infinity));
+
+    if (sorted.length === 0) {
+      list.innerHTML = '<div class="ai-item" style="color:#888;">No action items logged yet.</div>';
+      return;
+    }
+
+    sorted.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'ai-item';
+      const statusColor = AI_STATUS_COLORS[item.Status] || AI_STATUS_COLORS['Not Started'];
+      el.innerHTML = `
+        <div class="ai-item-top">
+          ${item.Category ? `<span class="ai-category">${escapeHtmlAI(item.Category)}</span>` : '<span></span>'}
+          ${item.Status ? `<span class="ai-status-badge" style="background:${statusColor}">${escapeHtmlAI(item.Status)}</span>` : ''}
+        </div>
+        <div class="ai-title">${escapeHtmlAI(item.ActionItem)}</div>
+        <div class="ai-meta">
+          <span>${escapeHtmlAI(item.Owners)}</span>
+          <span class="ai-due">${item.DueDate ? 'Due ' + formatDueDate(item.DueDate) : ''}</span>
+        </div>
+        ${item.Notes ? `<div class="ai-notes">${escapeHtmlAI(item.Notes)}</div>` : ''}
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  async function loadActionItems() {
+    const note = document.getElementById('ai-status');
+    if (ACTION_ITEMS_CSV_URL.indexOf("REPLACE_WITH") === 0) {
+      note.textContent = 'Action items not connected yet — publish the sheet as CSV and send the link over.';
+      return;
+    }
+    try {
+      const res = await fetch(ACTION_ITEMS_CSV_URL);
+      if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+      const text = await res.text();
+      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+      const rows = parsed.data.map(mapActionItemCsvRow);
+      renderActionItems(rows);
+      note.textContent = '';
+    } catch (err) {
+      console.error('Action items load error:', err);
+      note.textContent = 'Unable to load action items right now. Check that the sheet is published and the link is correct.';
+    }
+  }
+
+  loadActionItems();
 </script>
 
 </body>
