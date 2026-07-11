@@ -496,7 +496,7 @@
     }
     .ml-item {
       width: 230px;
-      height: 220px;
+      min-height: 220px;
       flex-shrink: 0;
       border: 1px solid #E5E2DC;
       border-radius: 8px;
@@ -1245,15 +1245,15 @@
             <span class="ml-toggle-label" id="ml-materials-label-${idx}" onclick="toggleMlSection('materials', ${idx})">
               Materials <span class="ml-toggle-chevron" id="ml-materials-chevron-${idx}">\u25B8</span>
             </span>
+            <div class="ml-expand" id="ml-materials-wrap-${idx}">${materialButtonsML(item.Materials)}</div>
           ` : ''}
           ${hasActions ? `
             <span class="ml-toggle-label" id="ml-actions-label-${idx}" onclick="toggleMlSection('actions', ${idx})">
               Key actions <span class="ml-toggle-chevron" id="ml-actions-chevron-${idx}">\u25B8</span>
             </span>
+            <div class="ml-expand" id="ml-actions-wrap-${idx}">${bulletListML(item.Actions, 'ml-expand-bullets')}</div>
           ` : ''}
         </div>
-        ${hasMaterials ? `<div class="ml-expand" id="ml-materials-wrap-${idx}">${materialButtonsML(item.Materials)}</div>` : ''}
-        ${hasActions ? `<div class="ml-expand" id="ml-actions-wrap-${idx}">${bulletListML(item.Actions, 'ml-expand-bullets')}</div>` : ''}
       `;
       list.appendChild(el);
     });
