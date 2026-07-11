@@ -521,6 +521,20 @@
       border-radius: 999px;
       white-space: nowrap;
     }
+    .ml-item-body {
+      display: flex;
+      gap: 22px;
+    }
+    .ml-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .ml-materials-col {
+      width: 190px;
+      flex-shrink: 0;
+      border-left: 1px solid #EFEBE3;
+      padding-left: 18px;
+    }
     .ml-section-label {
       font-size: 0.68rem;
       font-weight: 700;
@@ -530,7 +544,8 @@
       margin-bottom: 4px;
       margin-top: 10px;
     }
-    .ml-section-label:first-of-type { margin-top: 0; }
+    .ml-main .ml-section-label:first-child { margin-top: 0; }
+    .ml-materials-col .ml-section-label { margin-top: 0; }
     .ml-bullets {
       font-size: 0.85rem;
       color: #333;
@@ -542,21 +557,24 @@
     .ml-bullets li { margin-bottom: 2px; }
     .ml-materials {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 6px;
     }
     .ml-material-btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 4px;
       font-size: 0.78rem;
       font-weight: 600;
       color: #6464FF;
       background: #EDEDFF;
-      padding: 5px 12px;
+      padding: 6px 12px;
       border-radius: 999px;
       text-decoration: none;
       transition: background 0.12s;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .ml-material-btn:hover {
       background: #6464FF;
@@ -1177,9 +1195,15 @@
         <div class="ml-item-top">
           <span class="ml-date">${escapeHtmlML(formatMeetingDate(item.Date))}</span>
         </div>
-        ${item.Topics ? `<div class="ml-section-label">Topics & Presenters</div>${bulletListML(item.Topics)}` : ''}
-        ${item.Materials ? `<div class="ml-section-label">Materials</div>${materialButtonsML(item.Materials)}` : ''}
-        ${item.Actions ? `<div class="ml-section-label">Key Actions</div>${bulletListML(item.Actions, 'ml-actions')}` : ''}
+        <div class="ml-item-body">
+          <div class="ml-main">
+            ${item.Topics ? `<div class="ml-section-label">Topics & Presenters</div>${bulletListML(item.Topics)}` : ''}
+            ${item.Actions ? `<div class="ml-section-label">Key Actions</div>${bulletListML(item.Actions, 'ml-actions')}` : ''}
+          </div>
+          <div class="ml-materials-col">
+            ${item.Materials ? `<div class="ml-section-label">Materials</div>${materialButtonsML(item.Materials)}` : ''}
+          </div>
+        </div>
       `;
       list.appendChild(el);
     });
