@@ -478,6 +478,90 @@
       border-radius: 999px;
       text-transform: lowercase;
     }
+
+    /* ── Meeting Log (custom, live from Google Sheet) ── */
+    .ml-status-note {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 12px;
+    }
+    .ml-scroll {
+      max-height: 560px;
+      overflow-y: auto;
+      border: 1px solid #E5E2DC;
+      border-radius: 8px;
+    }
+    .ml-list { display: flex; flex-direction: column; }
+    .ml-item {
+      padding: 16px 18px;
+      border-bottom: 1px solid #EFEBE3;
+    }
+    .ml-item:last-child { border-bottom: none; }
+    .ml-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .ml-date {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #222;
+    }
+    .ml-type-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .ml-type-tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #6464FF;
+      background: #EDEDFF;
+      padding: 2px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .ml-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #AAA39F;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+      margin-top: 10px;
+    }
+    .ml-section-label:first-of-type { margin-top: 0; }
+    .ml-bullets {
+      font-size: 0.85rem;
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
+      padding-left: 18px;
+    }
+    .ml-bullets.ml-actions li { color: #737373; }
+    .ml-bullets li { margin-bottom: 2px; }
+    .ml-materials {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ml-material-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #6464FF;
+      background: #EDEDFF;
+      padding: 5px 12px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 0.12s;
+    }
+    .ml-material-btn:hover {
+      background: #6464FF;
+      color: #FFFFFF;
+    }
   </style>
 </head>
 <body>
@@ -558,14 +642,12 @@
           <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/2026%20meeting%20slides,%20summaries?csf=1&web=1&e=e2EUrC" target="_blank" style="display:inline-block; background:#6464FF; color:#fff; text-decoration:none; padding:7px 14px; border-radius:6px; font-size:0.85rem; font-weight:500; white-space:nowrap;">meeting slides &amp; summaries</a>
         </div>
       </div>
-      <div class="embed-wrapper">
-        <iframe
-          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQxPHVAf3tY_GsMITGeosGWe06zV368puNrM_N_q7wVnI2OeLsHzHOUw_g0A1vhA8q4tPSZc0ZLcI-N/pubhtml?gid=1247336624&single=true&widget=false&headers=false&chrome=false"
-          height="340"
-        ></iframe>
+      <div class="ml-status-note" id="ml-status">Loading meeting log…</div>
+      <div class="ml-scroll" id="ml-scroll">
+        <div class="ml-list" id="ml-list"></div>
       </div>
       <div class="embed-footer">
-        <a href="https://docs.google.com/spreadsheets/d/1ONwIgDbl4-faraQrxvSj7AFbt5Xq1PUojUpNF7atDnw/edit?usp=sharing" target="_blank">open in full screen →</a>
+        <a href="https://docs.google.com/spreadsheets/d/1VbdbSbB-eQmW_gDU0WUEU-qc4fHx43Vw/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true#gid=1473401298" target="_blank">open sheet to edit →</a>
       </div>
     </div>
   </div>
@@ -1026,6 +1108,104 @@
   }
 
   loadActionItems();
+
+  // ══════════════════════════════════════════════════════════════
+  // MEETING LOG (custom, live from Google Sheet)
+  // ══════════════════════════════════════════════════════════════
+  const MEETING_LOG_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9BQccRIpL6fd-0v9DvXjXl4pMB84t0XavWFt5TA0F6d3bFkrzZuqHlCnQYflRvQ/pub?gid=1473401298&single=true&output=csv";
+
+  function escapeHtmlML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function formatMeetingDate(str) {
+    const d = parseLocalDateLC(str);
+    if (!d) return str;
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    return monthNames[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  }
+
+  function mapMeetingLogCsvRow(row) {
+    return {
+      Date: (row['Date'] || '').trim(),
+      Topics: (row['Topics & Presenters'] || '').trim(),
+      Materials: (row['Materials'] || '').trim(),
+      Actions: (row['Key Actions'] || '').trim()
+    };
+  }
+
+  function bulletListML(text, extraClass) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+    if (!lines.length) return '';
+    const items = lines.map(l => `<li>${escapeHtmlML(l.replace(/^[•\-\u2022]\s*/, ''))}</li>`).join('');
+    return `<ul class="ml-bullets${extraClass ? ' ' + extraClass : ''}">${items}</ul>`;
+  }
+
+  function materialButtonsML(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+    if (!lines.length) return '';
+    const buttons = lines.map(l => {
+      const parts = l.split('|');
+      const label = (parts[0] || '').trim();
+      const url = (parts[1] || '').trim();
+      if (!url) return '';
+      return `<a class="ml-material-btn" href="${escapeHtmlML(url)}" target="_blank">${escapeHtmlML(label || 'Link')}</a>`;
+    }).filter(b => b).join('');
+    return buttons ? `<div class="ml-materials">${buttons}</div>` : '';
+  }
+
+  function renderMeetingLog(rows) {
+    const list = document.getElementById('ml-list');
+    list.innerHTML = '';
+
+    const sorted = rows
+      .filter(r => r.Date)
+      .map(r => ({ ...r, _date: parseLocalDateLC(r.Date) }))
+      .sort((a, b) => (b._date ? b._date.getTime() : 0) - (a._date ? a._date.getTime() : 0));
+
+    if (sorted.length === 0) {
+      list.innerHTML = '<div style="padding:14px 16px;color:#888;">No meetings logged yet.</div>';
+      return;
+    }
+
+    sorted.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'ml-item';
+      el.innerHTML = `
+        <div class="ml-item-top">
+          <span class="ml-date">${escapeHtmlML(formatMeetingDate(item.Date))}</span>
+        </div>
+        ${item.Topics ? `<div class="ml-section-label">Topics & Presenters</div>${bulletListML(item.Topics)}` : ''}
+        ${item.Materials ? `<div class="ml-section-label">Materials</div>${materialButtonsML(item.Materials)}` : ''}
+        ${item.Actions ? `<div class="ml-section-label">Key Actions</div>${bulletListML(item.Actions, 'ml-actions')}` : ''}
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  async function loadMeetingLog() {
+    const note = document.getElementById('ml-status');
+    if (MEETING_LOG_CSV_URL.indexOf("REPLACE_WITH") === 0) {
+      note.textContent = 'Meeting log not connected yet — publish the sheet as CSV and send the link over.';
+      return;
+    }
+    try {
+      const res = await fetch(MEETING_LOG_CSV_URL);
+      if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+      const text = await res.text();
+      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+      const rows = parsed.data.map(mapMeetingLogCsvRow);
+      renderMeetingLog(rows);
+      note.textContent = '';
+    } catch (err) {
+      console.error('Meeting log load error:', err);
+      note.textContent = 'Unable to load the meeting log right now. Check that the sheet is published and the link is correct.';
+    }
+  }
+
+  loadMeetingLog();
 </script>
 
 </body>
