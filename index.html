@@ -485,97 +485,83 @@
       color: #888;
       margin-bottom: 12px;
     }
-    .ml-scroll {
-      max-height: 560px;
-      overflow-y: auto;
+    .ml-scroll-outer {
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .ml-list {
+      display: flex;
+      gap: 14px;
+      width: max-content;
+    }
+    .ml-item {
+      width: 230px;
+      height: 220px;
+      flex-shrink: 0;
       border: 1px solid #E5E2DC;
       border-radius: 8px;
-    }
-    .ml-list { display: flex; flex-direction: column; }
-    .ml-item {
-      padding: 16px 18px;
-      border-bottom: 1px solid #EFEBE3;
-    }
-    .ml-item:last-child { border-bottom: none; }
-    .ml-item-top {
+      padding: 14px 16px;
       display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 10px;
+      flex-direction: column;
     }
     .ml-date {
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-weight: 700;
       color: #222;
-    }
-    .ml-type-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .ml-type-tag {
-      display: inline-block;
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: #6464FF;
-      background: #EDEDFF;
-      padding: 2px 9px;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-    .ml-item-body {
-      display: flex;
-      gap: 22px;
-    }
-    .ml-main {
-      flex: 1;
-      min-width: 0;
-    }
-    .ml-materials-col {
-      width: 260px;
+      margin-bottom: 8px;
       flex-shrink: 0;
-      border-left: 1px solid #EFEBE3;
-      padding-left: 18px;
     }
-    .ml-section-label {
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: #AAA39F;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 4px;
-      margin-top: 10px;
+    .ml-bullets {
+      font-size: 0.78rem;
+      color: #333;
+      line-height: 1.5;
+      margin: 0 0 10px;
+      padding-left: 16px;
+      flex: 1;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 5;
+      -webkit-box-orient: vertical;
     }
-    .ml-main .ml-section-label:first-child { margin-top: 0; }
-    .ml-materials-col .ml-section-label { margin-top: 0; }
-    .ml-actions-label {
+    .ml-bullets li { margin-bottom: 2px; }
+    .ml-toggles {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .ml-toggle-label {
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #AAA39F;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
       user-select: none;
     }
-    .ml-actions-chevron {
+    .ml-toggle-label.open {
+      color: #6464FF;
+    }
+    .ml-toggle-chevron {
       font-size: 0.6rem;
-      color: #AAA39F;
       transition: transform 0.15s;
     }
-    .ml-actions-chevron.open {
+    .ml-toggle-chevron.open {
       transform: rotate(90deg);
     }
-    .ml-actions-wrap {
+    .ml-expand {
       display: none;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: #737373;
+      line-height: 1.5;
     }
-    .ml-actions-wrap.open {
+    .ml-expand.open {
       display: block;
     }
-    .ml-bullets {
-      font-size: 0.85rem;
-      color: #333;
-      line-height: 1.6;
-      margin: 0;
-      padding-left: 18px;
-    }
-    .ml-bullets.ml-actions li { color: #737373; }
-    .ml-bullets li { margin-bottom: 2px; }
     .ml-materials {
       display: flex;
       flex-direction: column;
@@ -600,6 +586,24 @@
     .ml-material-btn:hover {
       background: #6464FF;
       color: #FFFFFF;
+    }
+    .ml-actions-bullets {
+      margin: 0;
+      padding-left: 16px;
+    }
+    .ml-actions-bullets li { margin-bottom: 2px; }
+    .ml-expand-bullets {
+      font-size: 0.78rem;
+      color: #737373;
+      line-height: 1.5;
+      margin: 0;
+      padding-left: 16px;
+    }
+    .ml-expand-bullets li { margin-bottom: 2px; }
+    .ml-scroll-hint {
+      font-size: 0.7rem;
+      color: #AAA39F;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -699,9 +703,10 @@
         </div>
       </div>
       <div class="ml-status-note" id="ml-status">Loading meeting log…</div>
-      <div class="ml-scroll" id="ml-scroll">
+      <div class="ml-scroll-outer" id="ml-scroll">
         <div class="ml-list" id="ml-list"></div>
       </div>
+      <div class="ml-scroll-hint">&#8592; most recent &nbsp;&nbsp;&nbsp;&nbsp; oldest &#8594;</div>
       <div class="embed-footer">
         <a href="https://docs.google.com/spreadsheets/d/1VbdbSbB-eQmW_gDU0WUEU-qc4fHx43Vw/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true#gid=1473401298" target="_blank">open sheet to edit →</a>
       </div>
@@ -1175,11 +1180,11 @@
     };
   }
 
-  function bulletListML(text, extraClass) {
+  function bulletListML(text, className) {
     const lines = text.split('\n').map(l => l.trim()).filter(l => l);
     if (!lines.length) return '';
     const items = lines.map(l => `<li>${escapeHtmlML(l.replace(/^[•\-\u2022]\s*/, ''))}</li>`).join('');
-    return `<ul class="ml-bullets${extraClass ? ' ' + extraClass : ''}">${items}</ul>`;
+    return `<ul class="${className || 'ml-bullets'}">${items}</ul>`;
   }
 
   function materialButtonsML(text) {
@@ -1195,11 +1200,13 @@
     return buttons ? `<div class="ml-materials">${buttons}</div>` : '';
   }
 
-  function toggleMlActions(idx) {
-    const wrap = document.getElementById('ml-actions-wrap-' + idx);
-    const chevron = document.getElementById('ml-actions-chevron-' + idx);
+  function toggleMlSection(kind, idx) {
+    const wrap = document.getElementById('ml-' + kind + '-wrap-' + idx);
+    const label = document.getElementById('ml-' + kind + '-label-' + idx);
+    const chevron = document.getElementById('ml-' + kind + '-chevron-' + idx);
     if (!wrap) return;
     wrap.classList.toggle('open');
+    if (label) label.classList.toggle('open');
     if (chevron) chevron.classList.toggle('open');
   }
 
@@ -1210,7 +1217,8 @@
     const sorted = rows
       .filter(r => r.Date)
       .map(r => ({ ...r, _date: parseLocalDateLC(r.Date) }))
-      .sort((a, b) => (b._date ? b._date.getTime() : 0) - (a._date ? a._date.getTime() : 0));
+      .sort((a, b) => (b._date ? b._date.getTime() : 0) - (a._date ? a._date.getTime() : 0))
+      .slice(0, 12);
 
     if (sorted.length === 0) {
       list.innerHTML = '<div style="padding:14px 16px;color:#888;">No meetings logged yet.</div>';
@@ -1220,24 +1228,32 @@
     sorted.forEach((item, idx) => {
       const el = document.createElement('div');
       el.className = 'ml-item';
+
+      const topicLines = item.Topics.split('\n').map(l => l.trim()).filter(l => l);
+      const topicsHtml = topicLines.length
+        ? `<ul class="ml-bullets">${topicLines.map(l => `<li>${escapeHtmlML(l.replace(/^[•\-\u2022]\s*/, ''))}</li>`).join('')}</ul>`
+        : '<div class="ml-bullets"></div>';
+
+      const hasMaterials = !!item.Materials;
+      const hasActions = !!item.Actions;
+
       el.innerHTML = `
-        <div class="ml-item-top">
-          <span class="ml-date">${escapeHtmlML(formatMeetingDate(item.Date))}</span>
+        <div class="ml-date">${escapeHtmlML(formatMeetingDate(item.Date))}</div>
+        ${topicsHtml}
+        <div class="ml-toggles">
+          ${hasMaterials ? `
+            <span class="ml-toggle-label" id="ml-materials-label-${idx}" onclick="toggleMlSection('materials', ${idx})">
+              Materials <span class="ml-toggle-chevron" id="ml-materials-chevron-${idx}">\u25B8</span>
+            </span>
+          ` : ''}
+          ${hasActions ? `
+            <span class="ml-toggle-label" id="ml-actions-label-${idx}" onclick="toggleMlSection('actions', ${idx})">
+              Key actions <span class="ml-toggle-chevron" id="ml-actions-chevron-${idx}">\u25B8</span>
+            </span>
+          ` : ''}
         </div>
-        <div class="ml-item-body">
-          <div class="ml-main">
-            ${item.Topics ? `<div class="ml-section-label">Topics & Presenters</div>${bulletListML(item.Topics)}` : ''}
-            ${item.Actions ? `
-              <div class="ml-section-label ml-actions-label" onclick="toggleMlActions(${idx})">
-                Key Actions <span class="ml-actions-chevron" id="ml-actions-chevron-${idx}">\u25B8</span>
-              </div>
-              <div class="ml-actions-wrap" id="ml-actions-wrap-${idx}">${bulletListML(item.Actions, 'ml-actions')}</div>
-            ` : ''}
-          </div>
-          <div class="ml-materials-col">
-            ${item.Materials ? `<div class="ml-section-label">Materials</div>${materialButtonsML(item.Materials)}` : ''}
-          </div>
-        </div>
+        ${hasMaterials ? `<div class="ml-expand" id="ml-materials-wrap-${idx}">${materialButtonsML(item.Materials)}</div>` : ''}
+        ${hasActions ? `<div class="ml-expand" id="ml-actions-wrap-${idx}">${bulletListML(item.Actions, 'ml-expand-bullets')}</div>` : ''}
       `;
       list.appendChild(el);
     });
