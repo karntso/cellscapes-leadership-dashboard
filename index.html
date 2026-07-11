@@ -530,7 +530,7 @@
       min-width: 0;
     }
     .ml-materials-col {
-      width: 190px;
+      width: 260px;
       flex-shrink: 0;
       border-left: 1px solid #EFEBE3;
       padding-left: 18px;
@@ -546,6 +546,27 @@
     }
     .ml-main .ml-section-label:first-child { margin-top: 0; }
     .ml-materials-col .ml-section-label { margin-top: 0; }
+    .ml-actions-label {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+    .ml-actions-chevron {
+      font-size: 0.6rem;
+      color: #AAA39F;
+      transition: transform 0.15s;
+    }
+    .ml-actions-chevron.open {
+      transform: rotate(90deg);
+    }
+    .ml-actions-wrap {
+      display: none;
+    }
+    .ml-actions-wrap.open {
+      display: block;
+    }
     .ml-bullets {
       font-size: 0.85rem;
       color: #333;
@@ -564,7 +585,7 @@
       display: flex;
       align-items: center;
       gap: 4px;
-      font-size: 0.78rem;
+      font-size: 0.66rem;
       font-weight: 600;
       color: #6464FF;
       background: #EDEDFF;
@@ -646,7 +667,24 @@
 
 
 
-<!-- ══ MEETING LOG ══ -->
+<!-- ══ ACTION ITEM TRACKER ══ -->
+  <div class="section-card">
+    <div class="section-header open" onclick="toggleSection(this)">
+      <h2>action item tracker</h2>
+      <span class="toggle">+</span>
+    </div>
+    <div class="section-body">
+      <div class="ai-status-note" id="ai-status">Loading action items…</div>
+      <div class="ai-scroll" id="ai-scroll">
+        <div class="ai-list" id="ai-list"></div>
+      </div>
+      <div class="embed-footer">
+        <a href="https://docs.google.com/spreadsheets/d/1VbdbSbB-eQmW_gDU0WUEU-qc4fHx43Vw/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true" target="_blank">open sheet to edit →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MEETING LOG ══ -->
   <div class="section-card">
     <div class="section-header open" onclick="toggleSection(this)">
       <h2>meeting log</h2>
@@ -666,23 +704,6 @@
       </div>
       <div class="embed-footer">
         <a href="https://docs.google.com/spreadsheets/d/1VbdbSbB-eQmW_gDU0WUEU-qc4fHx43Vw/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true#gid=1473401298" target="_blank">open sheet to edit →</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ ACTION ITEM TRACKER ══ -->
-  <div class="section-card">
-    <div class="section-header open" onclick="toggleSection(this)">
-      <h2>action item tracker</h2>
-      <span class="toggle">+</span>
-    </div>
-    <div class="section-body">
-      <div class="ai-status-note" id="ai-status">Loading action items…</div>
-      <div class="ai-scroll" id="ai-scroll">
-        <div class="ai-list" id="ai-list"></div>
-      </div>
-      <div class="embed-footer">
-        <a href="https://docs.google.com/spreadsheets/d/1VbdbSbB-eQmW_gDU0WUEU-qc4fHx43Vw/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true" target="_blank">open sheet to edit →</a>
       </div>
     </div>
   </div>
@@ -1174,6 +1195,14 @@
     return buttons ? `<div class="ml-materials">${buttons}</div>` : '';
   }
 
+  function toggleMlActions(idx) {
+    const wrap = document.getElementById('ml-actions-wrap-' + idx);
+    const chevron = document.getElementById('ml-actions-chevron-' + idx);
+    if (!wrap) return;
+    wrap.classList.toggle('open');
+    if (chevron) chevron.classList.toggle('open');
+  }
+
   function renderMeetingLog(rows) {
     const list = document.getElementById('ml-list');
     list.innerHTML = '';
@@ -1188,7 +1217,7 @@
       return;
     }
 
-    sorted.forEach(item => {
+    sorted.forEach((item, idx) => {
       const el = document.createElement('div');
       el.className = 'ml-item';
       el.innerHTML = `
@@ -1198,7 +1227,12 @@
         <div class="ml-item-body">
           <div class="ml-main">
             ${item.Topics ? `<div class="ml-section-label">Topics & Presenters</div>${bulletListML(item.Topics)}` : ''}
-            ${item.Actions ? `<div class="ml-section-label">Key Actions</div>${bulletListML(item.Actions, 'ml-actions')}` : ''}
+            ${item.Actions ? `
+              <div class="ml-section-label ml-actions-label" onclick="toggleMlActions(${idx})">
+                Key Actions <span class="ml-actions-chevron" id="ml-actions-chevron-${idx}">\u25B8</span>
+              </div>
+              <div class="ml-actions-wrap" id="ml-actions-wrap-${idx}">${bulletListML(item.Actions, 'ml-actions')}</div>
+            ` : ''}
           </div>
           <div class="ml-materials-col">
             ${item.Materials ? `<div class="ml-section-label">Materials</div>${materialButtonsML(item.Materials)}` : ''}
