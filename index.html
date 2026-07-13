@@ -358,7 +358,7 @@
       text-overflow: ellipsis;
     }
     .day-ooo-icon { font-size: 0.66rem; flex-shrink: 0; }
-    .calendar-legend {
+    .calendar-legend, .ai-legend {
       display: flex;
       gap: 18px;
       flex-wrap: wrap;
@@ -647,6 +647,7 @@
     </div>
     <div class="section-body">
       <div class="quick-links">
+        <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/Leadership%20documents/2026%20leadership%20strategic%20planning/Execution%20plan?csf=1&web=1&e=WqWhvS" target="_blank">Execution plan</a>
         <a href="https://app.powerbi.com/links/-98YXLKxC1?ctid=32669cd6-737f-4b39-8bdd-d6951120d3fc&pbi_source=linkShare" target="_blank">CellScapes goals</a>
         <a href="https://alleninstitute-my.sharepoint.com/:x:/g/personal/gideon_dunster_alleninstitute_org/IQDGGOLsNNCCRKiG0DQqxuWxAbfkiRipIzVCGCMTQre4kTU?e=aAwKL2" target="_blank">dissemination goals</a>
         <a href="https://github.com/orgs/AllenCell/projects/20/views/1" target="_blank">dissemination progress board</a>
@@ -689,10 +690,12 @@
       <span class="toggle">+</span>
     </div>
     <div class="section-body">
+      <p class="section-note" style="margin:0 0 12px;">All leadership team members should review regularly and update items as they progress.</p>
       <div class="ai-status-note" id="ai-status">Loading action items…</div>
       <div class="ai-scroll" id="ai-scroll">
         <div class="ai-list" id="ai-list"></div>
       </div>
+      <div class="ai-legend" id="ai-legend"></div>
       <div class="embed-footer">
         <a href="https://docs.google.com/spreadsheets/d/1VbdbSbB-eQmW_gDU0WUEU-qc4fHx43Vw/edit?usp=sharing&ouid=111752552908735098726&rtpof=true&sd=true" target="_blank">open sheet to edit →</a>
       </div>
@@ -707,7 +710,7 @@
     </div>
     <div class="section-body">
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-        <p class="section-note" style="margin:0;">Slides, recordings, and key takeaways from each leadership meeting — newest first.</p>
+        <p class="section-note" style="margin:0;">Meeting agendas, key takeaways, and relevant materials.</p>
         <div style="display:flex; gap:8px; flex-shrink:0;">
           <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/2026%20meeting%20recordings?csf=1&web=1&e=Yyfk3z" target="_blank" style="display:inline-block; background:#6464FF; color:#fff; text-decoration:none; padding:7px 14px; border-radius:6px; font-size:0.85rem; font-weight:500; white-space:nowrap;">meeting recordings</a>
           <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/2026%20meeting%20slides,%20summaries?csf=1&web=1&e=e2EUrC" target="_blank" style="display:inline-block; background:#6464FF; color:#fff; text-decoration:none; padding:7px 14px; border-radius:6px; font-size:0.85rem; font-weight:500; white-space:nowrap;">meeting slides &amp; summaries</a>
@@ -1098,6 +1101,13 @@
   function renderActionItems(rows) {
     const list = document.getElementById('ai-list');
     list.innerHTML = '';
+
+    const legend = document.getElementById('ai-legend');
+    if (legend) {
+      legend.innerHTML = Object.entries(AI_STATUS_COLORS)
+        .map(([status, color]) => `<span><span class="legend-dot" style="background:${color}"></span>${status}</span>`)
+        .join('');
+    }
 
     const sorted = rows
       .filter(r => r.ActionItem)
