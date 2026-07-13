@@ -423,6 +423,9 @@
     .ai-row.no-extra:hover {
       background: transparent;
     }
+    .ai-row.done {
+      opacity: 0.45;
+    }
     .ai-status-dot {
       width: 8px;
       height: 8px;
@@ -647,7 +650,7 @@
     </div>
     <div class="section-body">
       <div class="quick-links">
-        <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/Leadership%20documents/2026%20leadership%20strategic%20planning/Execution%20plan?csf=1&web=1&e=WqWhvS" target="_blank">Execution plan</a>
+        <a href="https://alleninstitute-my.sharepoint.com/:f:/r/personal/kristine_arntson_alleninstitute_org/Documents/2026%20CellScapes/Leadership%20Meetings/Leadership%20documents/2026%20leadership%20strategic%20planning/Execution%20plan?csf=1&web=1&e=WqWhvS" target="_blank">execution plan</a>
         <a href="https://app.powerbi.com/links/-98YXLKxC1?ctid=32669cd6-737f-4b39-8bdd-d6951120d3fc&pbi_source=linkShare" target="_blank">CellScapes goals</a>
         <a href="https://alleninstitute-my.sharepoint.com/:x:/g/personal/gideon_dunster_alleninstitute_org/IQDGGOLsNNCCRKiG0DQqxuWxAbfkiRipIzVCGCMTQre4kTU?e=aAwKL2" target="_blank">dissemination goals</a>
         <a href="https://github.com/orgs/AllenCell/projects/20/views/1" target="_blank">dissemination progress board</a>
@@ -1112,7 +1115,12 @@
     const sorted = rows
       .filter(r => r.ActionItem)
       .map(r => ({ ...r, _date: parseLocalDateLC(r.DueDate) }))
-      .sort((a, b) => (a._date ? a._date.getTime() : Infinity) - (b._date ? b._date.getTime() : Infinity));
+      .sort((a, b) => {
+        const aDone = a.Status === 'Done' ? 1 : 0;
+        const bDone = b.Status === 'Done' ? 1 : 0;
+        if (aDone !== bDone) return aDone - bDone;
+        return (a._date ? a._date.getTime() : Infinity) - (b._date ? b._date.getTime() : Infinity);
+      });
 
     if (sorted.length === 0) {
       list.innerHTML = '<div style="padding:14px 16px;color:#888;">No action items logged yet.</div>';
@@ -1130,7 +1138,7 @@
       const hasExtra = !!(item.Category || item.Notes);
 
       const row = document.createElement('div');
-      row.className = 'ai-row' + (hasExtra ? '' : ' no-extra');
+      row.className = 'ai-row' + (hasExtra ? '' : ' no-extra') + (item.Status === 'Done' ? ' done' : '');
       row.innerHTML = `
         <span class="ai-status-dot" style="background:${statusColor}"></span>
         <span class="ai-row-owner">${escapeHtmlAI(item.Owners)}</span>
