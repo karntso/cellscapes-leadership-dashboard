@@ -323,6 +323,8 @@
     .calendar-day.empty { background: transparent; }
     .calendar-day.today { box-shadow: inset 0 0 0 2px #6464FF; }
     .calendar-day.holiday { background: #E3E0DA; }
+    .calendar-day.past { opacity: 0.45; }
+    .calendar-day.past.holiday { opacity: 0.55; }
     .calendar-day-num {
       font-weight: 700;
       font-size: 0.74rem;
@@ -954,11 +956,13 @@
       }
 
       const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      const cellDate = new Date(year, month, day);
       const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+      const isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
       const dayData = dayIndex[key];
       const isHoliday = dayData && dayData.events.some(e => e.EventType === 'Holiday');
       const cell = document.createElement('div');
-      cell.className = 'calendar-day' + (isToday ? ' today' : '') + (isHoliday ? ' holiday' : '');
+      cell.className = 'calendar-day' + (isToday ? ' today' : '') + (isHoliday ? ' holiday' : '') + (isPast ? ' past' : '');
 
       const num = document.createElement('div');
       num.className = 'calendar-day-num';
