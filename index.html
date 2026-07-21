@@ -1014,17 +1014,28 @@
         badge.className = 'day-event-badge';
         badge.style.background = LEADERSHIP_EVENT_TYPE_COLORS[ev.EventType] || LEADERSHIP_EVENT_TYPE_COLORS['Other'];
         badge.textContent = ev.EventTitle;
+        if (ev.Notes) badge.title = ev.Notes;
         badgeSlot.appendChild(badge);
       }
       cell.appendChild(badgeSlot);
 
-      const travel = (dayData ? dayData.ooo.filter(o => o.OOOType === 'Work Travel').map(o => o.Person) : []);
-      const personal = (dayData ? dayData.ooo.filter(o => o.OOOType === 'Personal').map(o => o.Person) : []);
+      const travelEntries = (dayData ? dayData.ooo.filter(o => o.OOOType === 'Work Travel') : []);
+      const personalEntries = (dayData ? dayData.ooo.filter(o => o.OOOType === 'Personal') : []);
+      const travel = travelEntries.map(o => o.Person);
+      const personal = personalEntries.map(o => o.Person);
+
+      function buildOooTooltip(entries) {
+        const withNotes = entries.filter(e => e.Notes);
+        if (!withNotes.length) return '';
+        return withNotes.map(e => e.Person + ': ' + e.Notes).join('\n');
+      }
 
       const personalRow = document.createElement('div');
       personalRow.className = 'day-ooo-row';
       if (personal.length) {
         personalRow.innerHTML = '<span class="day-ooo-icon">🌴</span>' + personal.join(', ');
+        const tip = buildOooTooltip(personalEntries);
+        if (tip) personalRow.title = tip;
       }
       cell.appendChild(personalRow);
 
@@ -1032,6 +1043,8 @@
       travelRow.className = 'day-ooo-row';
       if (travel.length) {
         travelRow.innerHTML = '<span class="day-ooo-icon">✈️</span>' + travel.join(', ');
+        const tip = buildOooTooltip(travelEntries);
+        if (tip) travelRow.title = tip;
       }
       cell.appendChild(travelRow);
 
@@ -1049,7 +1062,8 @@
       EventTitle: (row['Event Title'] || '').trim(),
       EventType: (row['Event Type'] || '').trim(),
       Start: (row['Start Date'] || '').trim(),
-      End: (row['End Date'] || '').trim()
+      End: (row['End Date'] || '').trim(),
+      Notes: (row['Notes'] || '').trim()
     };
   }
 
