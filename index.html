@@ -426,11 +426,27 @@
     .ai-row.done {
       opacity: 0.45;
     }
+    .ai-row.alt {
+      background: #FBF7EF;
+    }
+    .ai-row.alt:hover {
+      background: #EDEDFF;
+    }
     .ai-status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       flex-shrink: 0;
+      margin-right: 6px;
+    }
+    .ai-status-icon {
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      text-align: center;
+      line-height: 1;
+      margin-right: 6px;
+      display: inline-block;
     }
     .ai-row-action {
       color: #222;
@@ -1065,9 +1081,19 @@
   const AI_STATUS_COLORS = {
     "Not Started": "#737373",
     "In Progress": "#FF6E00",
-    "Done": "#00A59B",
-    "At Risk": "#CD0F55"
+    "Done": "#1B8A5A",
+    "Hold/Postponed": "#D32F2F"
   };
+
+  function statusIconHtml(status, color) {
+    if (status === 'Done') {
+      return `<span class="ai-status-icon" style="color:${color};" title="Done">&#10003;</span>`;
+    }
+    if (status === 'Hold/Postponed') {
+      return `<span class="ai-status-icon" style="color:${color};" title="Hold/Postponed">&#11042;</span>`;
+    }
+    return `<span class="ai-status-dot" style="background:${color}"></span>`;
+  }
 
   function formatDueDate(str) {
     const d = parseLocalDateLC(str);
@@ -1108,7 +1134,7 @@
     const legend = document.getElementById('ai-legend');
     if (legend) {
       legend.innerHTML = Object.entries(AI_STATUS_COLORS)
-        .map(([status, color]) => `<span><span class="legend-dot" style="background:${color}"></span>${status}</span>`)
+        .map(([status, color]) => `<span>${statusIconHtml(status, color)}${status}</span>`)
         .join('');
     }
 
@@ -1138,9 +1164,9 @@
       const hasExtra = !!(item.Category || item.Notes);
 
       const row = document.createElement('div');
-      row.className = 'ai-row' + (hasExtra ? '' : ' no-extra') + (item.Status === 'Done' ? ' done' : '');
+      row.className = 'ai-row' + (hasExtra ? '' : ' no-extra') + (item.Status === 'Done' ? ' done' : '') + (idx % 2 === 1 ? ' alt' : '');
       row.innerHTML = `
-        <span class="ai-status-dot" style="background:${statusColor}"></span>
+        ${statusIconHtml(item.Status, statusColor)}
         <span class="ai-row-owner">${escapeHtmlAI(item.Owners)}</span>
         <span class="ai-row-action">${escapeHtmlAI(item.ActionItem)}</span>
         <span class="ai-row-due${item.DueDate ? '' : ' no-date'}">${dueLabel}</span>
