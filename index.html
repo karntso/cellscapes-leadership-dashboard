@@ -427,12 +427,27 @@
       opacity: 0.45;
     }
     .ai-row.alt {
-      background: #FBF7EF;
+      background: #F5F5F4;
     }
     .ai-row.alt:hover {
       background: #EDEDFF;
     }
+    .ai-row.overdue {
+      font-style: italic;
+    }
+    .ai-row.overdue .ai-row-owner,
+    .ai-row.overdue .ai-row-action,
+    .ai-row.overdue .ai-row-due,
+    .ai-row.overdue .ai-row-due.no-date {
+      color: #CC0000;
+    }
+    .ai-overdue-mark {
+      color: #CC0000;
+      font-weight: 700;
+      font-style: normal;
+    }
     .ai-status-dot {
+      display: inline-block;
       width: 8px;
       height: 8px;
       border-radius: 50%;
@@ -1135,7 +1150,7 @@
     if (legend) {
       legend.innerHTML = Object.entries(AI_STATUS_COLORS)
         .map(([status, color]) => `<span>${statusIconHtml(status, color)}${status}</span>`)
-        .join('');
+        .join('') + '<span><span class="ai-overdue-mark">&#10071; </span>Overdue</span>';
     }
 
     const sorted = rows
@@ -1163,13 +1178,18 @@
       const dueLabel = item.DueDate ? formatDueDate(item.DueDate) : 'No due date';
       const hasExtra = !!(item.Category || item.Notes);
 
+      const dueDateObj = item.DueDate ? parseLocalDateLC(item.DueDate) : null;
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const isOverdue = !!dueDateObj && dueDateObj < todayMidnight && item.Status !== 'Done';
+
       const row = document.createElement('div');
-      row.className = 'ai-row' + (hasExtra ? '' : ' no-extra') + (item.Status === 'Done' ? ' done' : '') + (idx % 2 === 1 ? ' alt' : '');
+      row.className = 'ai-row' + (hasExtra ? '' : ' no-extra') + (item.Status === 'Done' ? ' done' : '') + (idx % 2 === 1 ? ' alt' : '') + (isOverdue ? ' overdue' : '');
       row.innerHTML = `
         ${statusIconHtml(item.Status, statusColor)}
         <span class="ai-row-owner">${escapeHtmlAI(item.Owners)}</span>
         <span class="ai-row-action">${escapeHtmlAI(item.ActionItem)}</span>
-        <span class="ai-row-due${item.DueDate ? '' : ' no-date'}">${dueLabel}</span>
+        <span class="ai-row-due${item.DueDate ? '' : ' no-date'}">${isOverdue ? '<span class="ai-overdue-mark">&#10071; </span>' : ''}${dueLabel}</span>
         <span class="ai-row-chevron" id="ai-chevron-${idx}">${hasExtra ? '\u25B8' : ''}</span>
       `;
       if (hasExtra) {
