@@ -902,23 +902,31 @@
   const CORRECT_PASS = "Cell@700Dexter";
   const SESSION_KEY  = "cs_auth";
 
+  // Safe localStorage wrapper — falls back gracefully if blocked
+  function lsGet(key) {
+    try { return localStorage.getItem(key); } catch(e) { return null; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, val); } catch(e) { /* blocked — session only */ }
+  }
+
   function showDashboard() {
     document.getElementById('auth-overlay').classList.add('hidden');
     document.getElementById('dashboard').style.display = 'block';
   }
 
   function checkAuth() {
-    const user = document.getElementById('auth-user').value;
-    const pass = document.getElementById('auth-pass').value;
+    const user = (document.getElementById('auth-user').value || '').trim();
+    const pass = document.getElementById('auth-pass').value || '';
     if (user === CORRECT_USER && pass === CORRECT_PASS) {
-      localStorage.setItem(SESSION_KEY, 'true');
+      lsSet(SESSION_KEY, 'true');
       showDashboard();
     } else {
       const box = document.getElementById('auth-box');
       const err = document.getElementById('auth-error');
       err.textContent = 'incorrect username or password — please try again';
       box.classList.remove('shake');
-      void box.offsetWidth; // re-trigger animation
+      void box.offsetWidth;
       box.classList.add('shake');
       document.getElementById('auth-pass').value = '';
     }
@@ -932,7 +940,7 @@
   });
 
   // Check if already authenticated
-  if (localStorage.getItem(SESSION_KEY) === 'true') {
+  if (lsGet(SESSION_KEY) === 'true') {
     showDashboard();
   }
 
