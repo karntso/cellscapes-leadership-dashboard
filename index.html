@@ -1486,22 +1486,21 @@
 
       const card = document.createElement('div');
       card.className = 'tt-card';
-      card.innerHTML = \`
-        <div class="tt-card-top">
-          <div class="tt-card-meeting">\${ttEsc(meeting)}</div>
-          <a href="\${ttEsc(link)}" target="_blank" class="tt-card-link" title="View presentation">&#8599;</a>
-        </div>
-        <div class="tt-card-person">
-          <div class="tt-card-av" style="background:\${colors.bg};color:\${colors.color}">\${ttInitials(name)}</div>
-          <span class="tt-card-name">\${ttEsc(name)}</span>
-        </div>
-        <div class="tt-card-divider"></div>
-        <div class="tt-card-meta">
-          <div class="tt-card-meta-row">&#128197; \${ttFormatDate(startD, endD)}</div>
-          \${loc ? \`<div class="tt-card-meta-row">&#128205; \${ttEsc(loc)}</div>\` : ''}
-        </div>
-        <span class="tt-card-badge \${ttBadgeClass(type)}">\${ttEsc(type)||'talk'}</span>
-      \`;
+      card.innerHTML =
+        '<div class="tt-card-top">' +
+          '<div class="tt-card-meeting">' + ttEsc(meeting) + '</div>' +
+          '<a href="' + ttEsc(link) + '" target="_blank" class="tt-card-link" title="View presentation">&#8599;</a>' +
+        '</div>' +
+        '<div class="tt-card-person">' +
+          '<div class="tt-card-av" style="background:' + colors.bg + ';color:' + colors.color + '">' + ttInitials(name) + '</div>' +
+          '<span class="tt-card-name">' + ttEsc(name) + '</span>' +
+        '</div>' +
+        '<div class="tt-card-divider"></div>' +
+        '<div class="tt-card-meta">' +
+          '<div class="tt-card-meta-row">&#128197; ' + ttFormatDate(startD, endD) + '</div>' +
+          (loc ? '<div class="tt-card-meta-row">&#128205; ' + ttEsc(loc) + '</div>' : '') +
+        '</div>' +
+        '<span class="tt-card-badge ' + ttBadgeClass(type) + '">' + (ttEsc(type) || 'talk') + '</span>';
       strip.appendChild(card);
     });
   }
