@@ -107,14 +107,15 @@
     .tt-strip-scroll::-webkit-scrollbar-track { background:transparent; }
     .tt-strip-scroll::-webkit-scrollbar-thumb { background:#DED9D1; border-radius:2px; }
     .tt-card { flex-shrink:0; width:210px; background:#fff; border:1px solid #e8e4dc; border-radius:10px; padding:12px 13px; display:flex; flex-direction:column; gap:8px; }
-    .tt-card-meeting { font-size:0.86rem; font-weight:600; color:#1A1A1A; line-height:1.3; }
+    .tt-card-meeting { font-size:0.86rem; font-weight:600; color:#1A1A1A; line-height:1.3; height:3.9em; overflow:hidden; }
+    .tt-card-person-row { display:flex; align-items:center; justify-content:space-between; gap:6px; }
     .tt-card-name { font-size:0.78rem; color:#555; }
     .tt-card-divider { height:1px; background:#f0ece4; }
-    .tt-card-meta { display:flex; flex-direction:column; gap:3px; }
+    .tt-card-meta { display:flex; flex-direction:column; gap:3px; min-height:2.4em; }
     .tt-card-meta-row { font-size:0.74rem; color:#737373; }
-    .tt-card-badge { display:inline-block; font-size:0.65rem; font-weight:600; padding:2px 7px; border-radius:999px; white-space:nowrap; align-self:flex-start; text-transform:lowercase; }
+    .tt-card-badge { display:inline-block; font-size:0.65rem; font-weight:600; padding:2px 7px; border-radius:999px; white-space:nowrap; flex-shrink:0; text-transform:lowercase; }
     .tt-badge-neutral { background:#F1EFE8; color:#5F5E5A; }
-    .tt-material-btn { display:inline-block; font-size:0.72rem; font-weight:600; color:#6464FF; background:#EDEDFF; padding:6px 13px; border-radius:999px; text-decoration:none; transition:background 0.12s, color 0.12s; white-space:nowrap; margin-top:2px; }
+    .tt-material-btn { display:block; font-size:0.72rem; font-weight:600; color:#6464FF; background:#EDEDFF; padding:6px 13px; border-radius:999px; text-decoration:none; transition:background 0.12s, color 0.12s; white-space:nowrap; text-align:center; margin-top:auto; }
     .tt-material-btn:hover { background:#6464FF; color:#fff; }
     .tt-empty { font-size:0.84rem; color:#888; font-style:italic; padding:8px 0; }
     .tt-hint { font-size:0.72rem; color:#AAA39F; margin-top:4px; }
@@ -743,7 +744,7 @@
       <div class="tt-strip-scroll" id="tt-strip"></div>
       <div class="tt-hint" id="tt-hint" style="display:none;">showing presentations only · travel-only entries not displayed · scroll to see all →</div>
       <div class="embed-footer">
-        <a href="https://alleninstitute.sharepoint.com/sites/AICSPrograms/Lists/TalksTravel/AllItems.aspx?sortField=Quarter&isAscending=true&viewid=f8945eb2%2D66c2%2D4dce%2D9fa6%2Dc3004f3aa636" target="_blank">open talks &amp; travel sheet →</a>
+        <a href="https://docs.google.com/spreadsheets/d/1H1cN97CCsAe9WrHzNTbNwQbGc3FIcndd/edit#gid=1228322803" target="_blank">open talks &amp; travel sheet →</a>
       </div>
     </div>
   </div>
@@ -1462,7 +1463,7 @@
     withLink.sort((a,b) => {
       const da = new Date(a['Meeting Start Date']||a['Start date']||a['Start']||'');
       const db = new Date(b['Meeting Start Date']||b['Start date']||b['Start']||'');
-      return da - db;
+      return db - da;
     });
     if (!withLink.length) {
       status.textContent = 'No talks or presentations with links found yet.';
@@ -1485,13 +1486,15 @@
       card.className = 'tt-card';
       card.innerHTML =
         '<div class="tt-card-meeting">' + ttEsc(meeting) + '</div>' +
-        '<span class="tt-card-name">' + ttEsc(name) + '</span>' +
+        '<div class="tt-card-person-row">' +
+          '<span class="tt-card-name">' + ttEsc(name) + '</span>' +
+          '<span class="tt-card-badge ' + ttBadgeClass(type) + '">' + (ttEsc(type) || 'talk').toLowerCase() + '</span>' +
+        '</div>' +
         '<div class="tt-card-divider"></div>' +
         '<div class="tt-card-meta">' +
           '<div class="tt-card-meta-row">' + ttFormatDate(startD, endD) + '</div>' +
           (loc ? '<div class="tt-card-meta-row">' + ttEsc(loc) + '</div>' : '') +
         '</div>' +
-        '<span class="tt-card-badge ' + ttBadgeClass(type) + '">' + (ttEsc(type) || 'talk').toLowerCase() + '</span>' +
         '<a href="' + ttEsc(link) + '" target="_blank" class="tt-material-btn">view materials</a>';
       strip.appendChild(card);
     });
