@@ -350,7 +350,9 @@
       margin-bottom: 2px;
     }
     .day-badge-slot {
-      min-height: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
     }
     .day-event-badge {
       display: -webkit-box;
@@ -1050,13 +1052,20 @@
       const badgeSlot = document.createElement('div');
       badgeSlot.className = 'day-badge-slot';
       if (dayData && dayData.events.length) {
-        const ev = dayData.events[0];
-        const badge = document.createElement('div');
-        badge.className = 'day-event-badge';
-        badge.style.background = LEADERSHIP_EVENT_TYPE_COLORS[ev.EventType] || LEADERSHIP_EVENT_TYPE_COLORS['Other'];
-        badge.textContent = ev.EventTitle;
-        if (ev.Notes) badge.title = ev.Notes;
-        badgeSlot.appendChild(badge);
+        // Sort: multi-day events first, then single-day; within each group keep original order
+        const sortedEvs = dayData.events.slice().sort((a, b) => {
+          const aMulti = a.Start !== a.End && a.End;
+          const bMulti = b.Start !== b.End && b.End;
+          return (bMulti ? 1 : 0) - (aMulti ? 1 : 0);
+        });
+        sortedEvs.forEach(ev => {
+          const badge = document.createElement('div');
+          badge.className = 'day-event-badge';
+          badge.style.background = LEADERSHIP_EVENT_TYPE_COLORS[ev.EventType] || LEADERSHIP_EVENT_TYPE_COLORS['Other'];
+          badge.textContent = ev.EventTitle;
+          if (ev.Notes) badge.title = ev.Notes;
+          badgeSlot.appendChild(badge);
+        });
       }
       cell.appendChild(badgeSlot);
 
